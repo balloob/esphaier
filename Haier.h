@@ -69,22 +69,22 @@ public:
     }
 
 
-    
+
     void setup() override {
-        
+
         Serial.begin(9600);
-        
-        
+
+
     }
 
     void loop() override  {
 
 
         if (Serial.available() > 0) {
-            
+
 			if (Serial.read() != 255) return;
 			if (Serial.read() != 255) return;
-			
+
 			data[0] = 255;
 			data[1] = 255;
 
@@ -97,7 +97,7 @@ public:
     }
 
     void update() override {
-            
+
         Serial.write(poll, sizeof(poll));
         auto raw = getHex(poll, sizeof(poll));
         ESP_LOGD("Haier", "POLL: %s ", raw.c_str());
@@ -143,7 +143,7 @@ public:
         target_temperature = data[SET_TEMPERATURE] + 16;
 
 
-        if (data[POWER] == POWER_OFF) {
+        if (data[POWER] % POWER_OFF == 0) {
             mode = CLIMATE_MODE_OFF;
 
         } else {
@@ -154,6 +154,12 @@ public:
                     break;
                 case MODE_HEAT:
                     mode = CLIMATE_MODE_HEAT;
+                    break;
+                case MODE_DRY:
+                    mode = CLIMATE_MODE_DRY;
+                    break;
+                case MODE_ONLY_FAN:
+                    mode = CLIMATE_MODE_FAN_ONLY;
                     break;
                 default:
                     mode = CLIMATE_MODE_AUTO;
@@ -185,6 +191,14 @@ public:
                 case CLIMATE_MODE_COOL:
                     data[POWER] = POWER_ON;
                     data[MODE] = MODE_COOL;
+                    break;
+                case CLIMATE_MODE_FAN_ONLY:
+                    data[POWER] = POWER_ON;
+                    data[MODE] = MODE_ONLY_FAN;
+                    break;
+                case CLIMATE_MODE_DRY:
+                    data[POWER] = POWER_ON;
+                    data[MODE] = MODE_DRY;
                     break;
             }
 
